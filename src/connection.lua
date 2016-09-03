@@ -1,14 +1,12 @@
-local http = require('socket.http')
+local https = require('ssl.https')
 
+local connection = {}
 
-local conexao = {}
-
-function getPage(about) 
-	if (about == nil ) then
-		about = 'Especial:Aleatória'
-	end
+function connection.getPage(about) 
+	about = about or 'Especial:Aleatória'
+	
 	url = 'https://pt.wikipedia.org/wiki/' .. about 
-	return http.request(url)
+	return https.request(url)
 end
 
-return conexao
+return connection
