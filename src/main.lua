@@ -1,27 +1,22 @@
-print("Hellow World, Rickkftime viado!")
+local connection = require('connection')
+local jsonparser = require('parser')
 
-local conexao. = require('conection')
+parser = jsonparser:new()
+conn = connection:new()
 
-function getPlainText(body)
-  print(body)
-end
+while menuOption ~= '6' do
+	print('LunaLetroca')
+	print('[1]: Pesquisar novo tema')
+	print('[6]: Sair')
+	menuOption = io.read()
 
-
-while menuOption ~= "6" do
-  print("LunaLetroca")
-  menuOption = io.read()
-
-  print("(1) Pesquisar novo tema\n")
-
-  if menuOption == "1" then
-    theme = io.read()
-    body = conexao.getPage(theme)
-
-    hardText = getPlainText(body)
-    filteredText = filterText(hardText)
-
-    print("(2) ")
-
-  end
-
+	if menuOption == '1' then
+		io.write("Digite um tema a ser pesquisado: ")
+		theme = string.format("%s", io.read())
+		print("Fazendo a requisição no Wikipedia...")
+		json = conn.getpage(theme)
+		print("Fazendo parsing...")
+		content = parser.parse(json)
+		print(content)
+	end
 end
