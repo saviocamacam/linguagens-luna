@@ -1,5 +1,6 @@
 local connection = require('connection')
 local jsonparser = require('parser')
+local utf8 = require('lua-utf8')
 
 parser = jsonparser:new()
 conn = connection:new()
@@ -17,8 +18,26 @@ function mysplit(inputstr, sep)
 end
 
 local function searchWords(content, wordLenght)
-	local tableWords = mysplit(content, " ")
-	print(tableWords)
+	local tableWords = mysplit(content, " ,.\n")
+	for k, v in pairs(tableWords) do
+    print(k, v)
+  end
+end
+
+local function printTable(table)
+  for k, v in pairs(table) do
+    print(k, v)
+  end
+end
+
+local function getWordSize(words, size)
+  local wordsInSize = {}
+  for k, v in pairs(words) do
+    if utf8.len(v) == size then
+      table.insert(wordsInSize, v)
+    end
+  end
+  return wordsInSize
 end
 
 while menuOption ~= '6' do
@@ -35,16 +54,17 @@ while menuOption ~= '6' do
 		json = conn.getpage(theme)
 		print("Fazendo parsing...")
 		content = parser.parse(json)
-		print(content)
-	end
+		--print(content)
+    if content ~= nil then
+      tableWords = mysplit(content, " ,.\n")
+    end
+  end
 
 	if menuOption == '2' then
 		print('Qual o tamanho maximo da palavra?')
-		wordLenght = io.read()
-
-
+		wordLenght = io.read("*number")
 		print("Pesquisando palavras...")
-
-		selectWords = searchWords(content, wordLenght)
+		selectWords = getWordSize(tableWords, wordLenght)
+    printTable(selectWords)
 	end
 end
