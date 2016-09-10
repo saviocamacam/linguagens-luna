@@ -40,13 +40,13 @@ local function getWordSize(words, size)
   return wordsInSize
 end
 
-local function inTable(selectedWords, wordIn)
+local function notInTable(selectedWords, wordIn)
   for k, v in pairs(selectedWords) do
     if v == wordIn then
-      return true
+      return false
     end
   end
-  return false
+  return true
 end
 
 local function inTableIndex(selectedWords, wordIn)
@@ -105,7 +105,7 @@ local function selectWords(allWords, wordLenght)
       end
     end
 
-    if counter == utf8.len(v) and inTable(selectedWords, v) then
+    if counter == utf8.len(v) and notInTable(selectedWords, v) then
       table.insert(selectedWords, v)
     end
     counter = 0
@@ -150,7 +150,7 @@ function shuffleWord(mainWord)
   while i ~= #mainWordTable+1 do
     local position = math.random(#mainWordTable)
     local letter = mainWordTable[position]
-    if inTable(tablePositions, position) then
+    if notInTable(tablePositions, position) then
       table.insert(tablePositions, position)
       table.insert(squigglyWordTable, letter)
       i = i + 1
@@ -205,6 +205,33 @@ function removeLetter(squigglyWordTable, newLetter)
   end
 end
 
+function resetBiggestMask(wordMaskTable)
+  for k, v in pairs(wordMaskTable) do
+    if v ~= ' ' and v ~= '_' then
+      wordMaskTable[k] = '_'
+    end
+  end
+end
+
+function pop(wordMaskTable)
+  for k, v in pairs(wordMaskTable) do
+    if v == '_' and k > 2 then
+      local letter = wordMaskTable[k-2]
+      wordMaskTable[k-2] = '_'
+      return letter
+    end
+    if k == #wordMaskTable then
+      local letter = wordMaskTable[k-1]
+      wordMaskTable[k-1] = '_'
+      return letter
+    end
+  end
+end
+
+function pull(squigglyWordTable, letter)
+  table.insert(squigglyWordTable, letter)
+end
+
 showMenu()
 menuOption = io.read()
 
@@ -239,6 +266,7 @@ while menuOption ~= '6' do
 	end
 
   if menuOption == '3' then
+
     squigglyWordTable = shuffleWord(mainWord)
     squigglyWord = tableToString(squigglyWordTable, true)
     biggestMask = tableToString(biggestMaskTable, true)
@@ -247,8 +275,7 @@ while menuOption ~= '6' do
     local newLetter = io.read()
 
     while newLetter ~= '1' and newLetter ~= '2' and newLetter ~= '3' do
-      print(">>>>>>>>>>>>>>>>>>>>>>>")
-      if not inTable(squigglyWordTable, newLetter) then
+      if not notInTable(squigglyWordTable, newLetter) then
         print("tem: ", newLetter)
 
         insertLetter(biggestMaskTable, newLetter)
@@ -260,18 +287,45 @@ while menuOption ~= '6' do
       else
         print("nao tem: ", newLetter)
       end
-      io.write("Testar? y : ")
+      io.write("Testar? >> ! : ")
       io.write("Nova entrada: ")
       newLetter = io.read()
-      if newLetter == 'y' then
+
+      if newLetter == '!' then
         wordForTest = tableToString(biggestMaskTable, false)
         print("For test: ", wordForTest)
         indexOfWord = inTableIndex(selectedWords, wordForTest)
+
         if indexOfWord > 0 then
-          table.insert(wordMask, wordForTest, indexOfWord)
+          print("Essa palavra existe!")
+          wordMask[indexOfWord] = wordForTest
+          resetBiggestMask(biggestMaskTable)
+
+          squigglyWordTable = shuffleWord(mainWord)
+          squigglyWord = tableToString(squigglyWordTable, true)
+          biggestMask = tableToString(biggestMaskTable, true)
+          printMask(wordMask, squigglyWord, biggestMask)
+          io.write("Nova entrada: ")
+          newLetter = io.read()
+
         else
           print("Essa palavra nao existe aqui!")
+          printMask(wordMask, squigglyWord, biggestMask)
+          io.write("Nova entrada: ")
+          newLetter = io.read()
         end
+      end
+
+      if newLetter == '*' then
+        letterP = pop(biggestMaskTable)
+        print("l: ", letterP)
+        pull(squigglyWordTable, letterP)
+        squigglyWord = tableToString(squigglyWordTable, true)
+        biggestMask = tableToString(biggestMaskTable, true)
+        printMask(wordMask, squigglyWord, biggestMask)
+
+        io.write("Nova entrada: ")
+        newLetter = io.read()
       end
     end
   end
