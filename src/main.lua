@@ -138,9 +138,25 @@ function criarMascara(palavrasSelecionadas)
   return mascarasPalavras, maiorMascaraTabela
 end
 
+function embaralhaTabelaPalavra(palavraEmbaralhadaTabela)
+  local i = 1
+  local tabelaPosicoes = {}
+  while i ~= #palavraEmbaralhadaTabela do
+    local posicao1 = math.random(#palavraEmbaralhadaTabela)
+    local letra1 = palavraEmbaralhadaTabela[posicao1]
+
+    local posicao2 = math.random(#palavraEmbaralhadaTabela)
+    local letra2 = palavraEmbaralhadaTabela[posicao2]
+
+    palavraEmbaralhadaTabela[posicao2] = letra1
+    palavraEmbaralhadaTabela[posicao1] = letra2
+    i = i + 1
+  end
+end
+
 function embaralhaPalavra(palavraPrincipal)
   local palavraPrincipalTabela = {}
-  local palavrasEmbaralhadasTabela = {}
+  local palavraEmbaralhadaTabela = {}
   local tabelaPosicoes = {}
   for c in newUtf8.gmatch(palavraPrincipal, ".") do
     table.insert(palavraPrincipalTabela, c)
@@ -152,17 +168,17 @@ function embaralhaPalavra(palavraPrincipal)
     local letra = palavraPrincipalTabela[posicao]
     if naoNaTabela(tabelaPosicoes, posicao) then
       table.insert(tabelaPosicoes, posicao)
-      table.insert(palavrasEmbaralhadasTabela, letra)
+      table.insert(palavraEmbaralhadaTabela, letra)
       i = i + 1
     end
   end
 
-  return palavrasEmbaralhadasTabela
+  return palavraEmbaralhadaTabela
 end
 
-function tabelaParaString(palavrasEmbaralhadasTabela, bool)
+function tabelaParaString(palavraEmbaralhadaTabela, bool)
   local palavraEmbaralhada = ""
-  for k, v in pairs(palavrasEmbaralhadasTabela) do
+  for k, v in pairs(palavraEmbaralhadaTabela) do
     if bool then
       palavraEmbaralhada = palavraEmbaralhada .. v .." "
     end
@@ -197,10 +213,10 @@ function insereLetra(maiorMascaraTabela, novaLetra)
   end
 end
 
-function removeLetra(palavrasEmbaralhadasTabela, novaLetra)
-  for k, v in pairs(palavrasEmbaralhadasTabela) do
+function removeLetra(palavraEmbaralhadaTabela, novaLetra)
+  for k, v in pairs(palavraEmbaralhadaTabela) do
     if v == novaLetra then
-      table.remove(palavrasEmbaralhadasTabela, k)
+      table.remove(palavraEmbaralhadaTabela, k)
       return
     end
   end
@@ -229,13 +245,15 @@ function pop(mascaraPalavraTabela)
   end
 end
 
-function pull(palavrasEmbaralhadasTabela, letra)
-  table.insert(palavrasEmbaralhadasTabela, letra)
+function pull(palavraEmbaralhadaTabela, letra)
+  table.insert(palavraEmbaralhadaTabela, letra)
 end
 
 --exibirMenu()
 --print("Pesquise um tema: ")
 opcaoMenu = '1'
+conteudo = ""
+palavrasSelecionadas = nil
 
 while opcaoMenu ~= '6' do
 	if opcaoMenu == '1' then
@@ -244,6 +262,7 @@ while opcaoMenu ~= '6' do
 		print("Fazendo a requisição no Wikipedia...")
 		json = conn.getpage(tema)
 		print("Fazendo parsing...")
+
 		conteudo = parser.parse(json)
 		--print("\n", conteudo)
 
@@ -270,30 +289,30 @@ while opcaoMenu ~= '6' do
       --imprimeTabela(palavrasSelecionadas)
       mascarasPalavras, maiorMascaraTabela = criarMascara(palavrasSelecionadas)
 
-      palavrasEmbaralhadasTabela = embaralhaPalavra(palavraPrincipal)
-      palavraEmbaralhada = tabelaParaString(palavrasEmbaralhadasTabela, true)
+      palavraEmbaralhadaTabela = embaralhaPalavra(palavraPrincipal)
+      palavraEmbaralhada = tabelaParaString(palavraEmbaralhadaTabela, true)
     end
 	end
 
   if opcaoMenu == '3' then
 
-    if conteudo == "" then
+    if conteudo == "" or palavrasSelecionadas == nil then
       print("Nenhum resultado para essa pesquisa!")
     else
-      palavrasEmbaralhadasTabela = embaralhaPalavra(palavraPrincipal)
-      palavraEmbaralhada = tabelaParaString(palavrasEmbaralhadasTabela, true)
+      palavraEmbaralhadaTabela = embaralhaPalavra(palavraPrincipal)
+      palavraEmbaralhada = tabelaParaString(palavraEmbaralhadaTabela, true)
       maiorMascara = tabelaParaString(maiorMascaraTabela, true)
       imprimeMascara(mascarasPalavras, palavraEmbaralhada, maiorMascara)
       io.write("Nova entrada: ")
       local novaLetra = io.read()
 
-      while novaLetra ~= '1' and novaLetra ~= '2' and novaLetra ~= '3' do
-        if not naoNaTabela(palavrasEmbaralhadasTabela, novaLetra) then
+      while novaLetra ~= '1' and novaLetra ~= '2'--[[ and novaLetra ~= '3']] do
+        if not naoNaTabela(palavraEmbaralhadaTabela, novaLetra) then
           print("tem: ", novaLetra)
 
           insereLetra(maiorMascaraTabela, novaLetra)
-          removeLetra(palavrasEmbaralhadasTabela, novaLetra)
-          palavraEmbaralhada = tabelaParaString(palavrasEmbaralhadasTabela, true)
+          removeLetra(palavraEmbaralhadaTabela, novaLetra)
+          palavraEmbaralhada = tabelaParaString(palavraEmbaralhadaTabela, true)
           maiorMascara = tabelaParaString(maiorMascaraTabela, true)
           imprimeMascara(mascarasPalavras, palavraEmbaralhada, maiorMascara)
 
@@ -305,25 +324,35 @@ while opcaoMenu ~= '6' do
         io.write("Nova entrada: ")
         novaLetra = io.read()
 
+        if novaLetra == '3' then
+          embaralhaTabelaPalavra(palavraEmbaralhadaTabela)
+          palavraEmbaralhada = tabelaParaString(palavraEmbaralhadaTabela, true)
+          imprimeMascara(mascarasPalavras, palavraEmbaralhada, maiorMascara)
+        end
+
+        if novaLetra == '4' then
+          imprimeTabela(palavrasSelecionadas)
+        end
+
         if novaLetra == '!' then
           PalavraTeste = tabelaParaString(maiorMascaraTabela, false)
           print("Para teste: ", PalavraTeste)
           indicePalavra = pegarIndiceTabela(palavrasSelecionadas, PalavraTeste)
 
           if indicePalavra > 0 then
-            print("Essa palavra existe!")
+            print("\nEssa palavra existe!")
             mascarasPalavras[indicePalavra] = PalavraTeste
             resetMaiorMascara(maiorMascaraTabela)
 
-            palavrasEmbaralhadasTabela = embaralhaPalavra(palavraPrincipal)
-            palavraEmbaralhada = tabelaParaString(palavrasEmbaralhadasTabela, true)
+            palavraEmbaralhadaTabela = embaralhaPalavra(palavraPrincipal)
+            palavraEmbaralhada = tabelaParaString(palavraEmbaralhadaTabela, true)
             maiorMascara = tabelaParaString(maiorMascaraTabela, true)
             imprimeMascara(mascarasPalavras, palavraEmbaralhada, maiorMascara)
             io.write("Nova entrada: ")
             novaLetra = io.read()
 
           else
-            print("Essa palavra nao existe aqui!")
+            print("\nEssa palavra nao existe aqui!")
             imprimeMascara(mascarasPalavras, palavraEmbaralhada, maiorMascara)
             io.write("Nova entrada: ")
             novaLetra = io.read()
@@ -333,20 +362,25 @@ while opcaoMenu ~= '6' do
         if novaLetra == '*' then
           letraRemovida = pop(maiorMascaraTabela)
           print("l: ", letraRemovida)
-          pull(palavrasEmbaralhadasTabela, letraRemovida)
-          palavraEmbaralhada = tabelaParaString(palavrasEmbaralhadasTabela, true)
+          pull(palavraEmbaralhadaTabela, letraRemovida)
+          palavraEmbaralhada = tabelaParaString(palavraEmbaralhadaTabela, true)
           maiorMascara = tabelaParaString(maiorMascaraTabela, true)
           imprimeMascara(mascarasPalavras, palavraEmbaralhada, maiorMascara)
 
           io.write("Nova entrada: ")
           novaLetra = io.read()
         end
-      end
-    end
-  end
+
+      end --end do while
+    end --end do else do conteudo
+  end -- end do menuOption 3
 
   if opcaoMenu == '4' then
-    imprimeTabela(palavrasSelecionadas)
+    if conteudo == "" or palavrasSelecionadas == nil then
+      print("Nenhum resultado para essa pesquisa!")
+    else
+      imprimeTabela(palavrasSelecionadas)
+    end
   end
 
   if opcaoMenu ~= '3' then
