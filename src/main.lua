@@ -178,6 +178,7 @@ function exibirMenu()
 	print('[1]: Pesquisar novo tema')
 	print('[2]: Informar tamanho da palavra')
   print('[3]: Embaralhar letras')
+  print("[4]: Modo trapaça")
 	print('[6]: Sair')
 end
 
@@ -244,7 +245,7 @@ while opcaoMenu ~= '6' do
 		json = conn.getpage(tema)
 		print("Fazendo parsing...")
 		conteudo = parser.parse(json)
-		print("\n", conteudo)
+		--print("\n", conteudo)
 
     if conteudo == "" then
       print("Nenhum resultado para essa pesquisa!")
@@ -266,7 +267,7 @@ while opcaoMenu ~= '6' do
   		print("Pesquisando palavras...")
 
       palavrasSelecionadas, palavraPrincipal = selectWords(todasPalavras, tamanhoPalavra)
-      imprimeTabela(palavrasSelecionadas)
+      --imprimeTabela(palavrasSelecionadas)
       mascarasPalavras, maiorMascaraTabela = criarMascara(palavrasSelecionadas)
 
       palavrasEmbaralhadasTabela = embaralhaPalavra(palavraPrincipal)
@@ -297,7 +298,8 @@ while opcaoMenu ~= '6' do
           imprimeMascara(mascarasPalavras, palavraEmbaralhada, maiorMascara)
 
         else
-          print("nao tem: ", novaLetra)
+          print("\nEssa letra nao pertence a palavra: ", novaLetra)
+          imprimeMascara(mascarasPalavras, palavraEmbaralhada, maiorMascara)
         end
         io.write("Testar? >> ! : ")
         io.write("Nova entrada: ")
@@ -341,6 +343,10 @@ while opcaoMenu ~= '6' do
         end
       end
     end
+  end
+
+  if opcaoMenu == '4' then
+    imprimeTabela(palavrasSelecionadas)
   end
 
   if opcaoMenu ~= '3' then
