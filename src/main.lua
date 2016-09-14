@@ -320,7 +320,7 @@ while opcaoMenu ~= '6' do
           print("\nEssa letra nao pertence a palavra: ", novaLetra)
           imprimeMascara(mascarasPalavras, palavraEmbaralhada, maiorMascara)
         end
-        io.write("Testar? >> ! : ")
+        io.write("\n[1 | 2]: Menu [3]: Embaralhar [4]: Modo trapaça\n Testar? >> ! : ")
         io.write("Nova entrada: ")
         novaLetra = io.read()
 
